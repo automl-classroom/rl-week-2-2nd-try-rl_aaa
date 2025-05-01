@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import gymnasium as gym
+import numpy as np
 
 
 # ------------- TODO: Implement the following environment -------------
@@ -29,9 +30,20 @@ class MyEnv(gym.Env):
 
     metadata = {"render_modes": ["human"]}
 
-    def __init__(self):
+    def __init__(self, seed: int | None = None):
         """Initializes the observation and action space for the environment."""
-        pass
+        self.rng = np.random.default_rng(seed)
+
+        self.rewards = [0, 1]
+        self.horizon = 10
+        self.curent_steps = 0
+        self.position = 0
+
+        self.observation_space = gym.spaces.Discrete(2)
+        self.action_space = gym.spaces.Discrete(2)
+
+        self.states = np.array([0, 1])
+        self.actions = np.array([0, 1])
 
 
 class PartialObsWrapper(gym.Wrapper):
