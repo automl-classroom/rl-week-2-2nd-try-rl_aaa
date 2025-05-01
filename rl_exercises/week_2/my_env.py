@@ -45,7 +45,6 @@ class MyEnv(gym.Env):
         self.states = np.array([0, 1])
         self.actions = np.array([0, 1])
 
-
     def reset(self, seed: int | None = None):
         """Resets the environment to the initial state."""
         self.curent_steps = 0
@@ -53,7 +52,6 @@ class MyEnv(gym.Env):
         return self.position, {}
 
     def step(self, action: int):
-
         action = int(action)
         if not self.action_space.contains(action):
             raise RuntimeError(f"{action} is not a valid action (needs to be 0 or 1)")
@@ -72,18 +70,17 @@ class MyEnv(gym.Env):
         R = np.zeros((nS, nA), dtype=float)
         for s in range(nS):
             for a in range(nA):
-                #nxt = max(0, min(nS - 1, s + (-1 if a == 0 else 1)))
+                # nxt = max(0, min(nS - 1, s + (-1 if a == 0 else 1)))
                 R[s, a] = self.rewards[a]
         return R
 
-
     def get_transition_matrix(self) -> np.ndarray:
-        nS, nA = len(S), len(A)
-        T = np.zeros((nS, nA, nS), dtype=float)
-        for s in S:
-            for a in A:
-                s_next = max(0, min(nS - 1, s + (-1 if a == 0 else 1)))
-                T[s, a, s_next] = 1.0 
+        T = np.zeros(
+            (self.observation_space.n, self.action_space.n, self.observation_space.n)
+        )
+        for s in range(self.observation_space.n):
+            for a in range(self.action_space.n):
+                T[s, a, a] = 1.0  # action leads to state == action
         return T
 
     def render(self, mode="human"):
@@ -97,8 +94,6 @@ class MyEnv(gym.Env):
             Render mode (only "human" is supported).
         """
         print(f"[MarsRover] pos={self.position}, steps={self.current_steps}")
-
-       
 
 
 class PartialObsWrapper(gym.Wrapper):
