@@ -48,7 +48,7 @@ class ValueIteration(AbstractAgent):
 
         # TODO: Extract MDP components from the environment
         self.S = env.states  # type: ignore[attr-defined]
-        self.A = env.actions  
+        self.A = env.actions
         self.T = env.transition_matrix  # type: ignore[attr-defined]
         self.R_sa = env.get_reward_per_action()  # type: ignore[attr-defined]
         self.n_states = len(self.S)
@@ -76,7 +76,6 @@ class ValueIteration(AbstractAgent):
         self.pi = pi_opt
         self.policy_fitted = True
 
-
     def predict_action(
         self,
         observation: int,
@@ -88,7 +87,8 @@ class ValueIteration(AbstractAgent):
             self.update_agent()
 
         # TODO: Return action from learned policy
-        raise NotImplementedError("predict_action() is not implemented.")
+        action = self.pi[observation]
+        return action, {}
 
 
 def value_iteration(
@@ -128,8 +128,8 @@ def value_iteration(
     """
     n_states, n_actions = R_sa.shape
     V = np.zeros(n_states, dtype=float)
-    rng = np.random.default_rng(seed) 
-    #pi = None
+    rng = np.random.default_rng(seed)
+    # pi = None
 
     # TODO: update V using the Q values until convergence
     while True:
@@ -142,7 +142,6 @@ def value_iteration(
 
         V = np.max(Q, axis=1)
 
-       
         if np.max(np.abs(V - V_prev)) < epsilon:
             break
 

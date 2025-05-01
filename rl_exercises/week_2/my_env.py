@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from typing import Any, SupportsFloat
+
 import gymnasium as gym
 import numpy as np
-from typing import Any, SupportsFloat
 
 
 # ------------- TODO: Implement the following environment -------------
