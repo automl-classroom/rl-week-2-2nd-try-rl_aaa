@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import gymnasium as gym
 import numpy as np
+from typing import Any, SupportsFloat
 
 
 # ------------- TODO: Implement the following environment -------------
@@ -98,7 +99,7 @@ class MyEnv(gym.Env):
 
 class PartialObsWrapper(gym.Wrapper):
     """Wrapper that makes the underlying env partially observable by injecting
-    observation noise: with probability `noise`, the true state is replaced by
+    observation noise: with probability noise, the true state is replaced by
     a random (incorrect) observation.
 
     Parameters
@@ -114,5 +115,39 @@ class PartialObsWrapper(gym.Wrapper):
 
     metadata = {"render_modes": ["human"]}
 
-    def __init__(self, env: gym.Env, noise: float = 0.1, seed: int | None = None):
-        pass
+    def _init_(self, env: gym.Env, noise: float = 0.1, seed: int | None = None):
+        super()._init_(env)
+        assert 0.0 <= noise <= 1.0, "Noise must be in [0, 1]"
+        self.noise = noise
+        self.rng = np.random.default_rng(seed)
+        self.observation_space = env.observation_space  # preserve original space
+        self.action_space = env.action_space
+
+    def _noisy_obs(self, true_obs: int) -> int:
+        """Return a possibly noisy version of the true observation."""
+        if self.rng.random() < self.noise:
+            n = self.observation_space.n
+            others = [s for s in range(n) if s != true_obs]
+            return int(self.rng.choice(others))
+        else:
+            return int(true_obs)
+
+    def reset(
+        self,
+        *,
+        seed: int | None = None,
+        options: dict[str, Any] | None = None,
+    ) -> tuple[int, dict[str, Any]]:
+        obs, info = self.env.reset(seed=seed, options=options)
+        noisy_obs = self._noisy_obs(obs)
+        return noisy_obs, info
+
+    def step(
+        self, action: int
+    ) -> tuple[int, SupportsFloat, bool, bool, dict[str, Any]]:
+        obs, reward, terminated, truncated, info = self.env.step(action)
+        noisy_obs = self._noisy_obs(obs)
+        return noisy_obs, reward, terminated, truncated, info
+
+    def render(self, mode: str = "human"):
+        return self.env.render(mode=mode)
