@@ -46,6 +46,61 @@ class MyEnv(gym.Env):
         self.actions = np.array([0, 1])
 
 
+    def reset(self, seed: int | None = None):
+        """Resets the environment to the initial state."""
+        self.curent_steps = 0
+        self.position = 0
+        return self.position, {}
+
+    def step(self, action: int):
+
+        action = int(action)
+        if not self.action_space.contains(action):
+            raise RuntimeError(f"{action} is not a valid action (needs to be 0 or 1)")
+
+        self.curent_steps += 1
+        self.position = action
+        reward = float(self.rewards[self.position])
+        terminated = False
+        truncated = self.curent_steps >= self.horizon
+
+        return self.position, reward, terminated, truncated, {}
+
+    def get_reward_per_action(self) -> np.ndarray:
+        """Returns the reward matrix for each action."""
+        nS, nA = self.observation_space.n, self.action_space.n
+        R = np.zeros((nS, nA), dtype=float)
+        for s in range(nS):
+            for a in range(nA):
+                #nxt = max(0, min(nS - 1, s + (-1 if a == 0 else 1)))
+                R[s, a] = self.rewards[a]
+        return R
+
+
+    def get_transition_matrix(self) -> np.ndarray:
+        nS, nA = len(S), len(A)
+        T = np.zeros((nS, nA, nS), dtype=float)
+        for s in S:
+            for a in A:
+                s_next = max(0, min(nS - 1, s + (-1 if a == 0 else 1)))
+                T[s, a, s_next] = 1.0 
+        return T
+
+    def render(self, mode="human"):
+        """Renders the environment."""
+        """
+        Render the current state of the environment.
+
+        Parameters
+        ----------
+        mode : str
+            Render mode (only "human" is supported).
+        """
+        print(f"[MarsRover] pos={self.position}, steps={self.current_steps}")
+
+       
+
+
 class PartialObsWrapper(gym.Wrapper):
     """Wrapper that makes the underlying env partially observable by injecting
     observation noise: with probability `noise`, the true state is replaced by
