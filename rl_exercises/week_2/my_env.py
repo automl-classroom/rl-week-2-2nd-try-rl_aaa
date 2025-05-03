@@ -116,8 +116,8 @@ class PartialObsWrapper(gym.Wrapper):
 
     metadata = {"render_modes": ["human"]}
 
-    def _init_(self, env: gym.Env, noise: float = 0.1, seed: int | None = None):
-        super()._init_(env)
+    def __init__(self, env: gym.Env, noise: float = 0.1, seed: int | None = None):
+        super().__init__(env)
         assert 0.0 <= noise <= 1.0, "Noise must be in [0, 1]"
         self.noise = noise
         self.rng = np.random.default_rng(seed)
@@ -139,7 +139,7 @@ class PartialObsWrapper(gym.Wrapper):
         seed: int | None = None,
         options: dict[str, Any] | None = None,
     ) -> tuple[int, dict[str, Any]]:
-        obs, info = self.env.reset(seed=seed, options=options)
+        obs, info = self.env.reset(seed=seed)
         noisy_obs = self._noisy_obs(obs)
         return noisy_obs, info
 
